@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Message</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f0f0f0;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background-color: rgba(40, 40, 60, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #444;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #7289da;
+            font-size: 24px;
+        }
+        
+        .instructions {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            color: #7289da;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #aaa;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            background-color: rgba(30, 30, 46, 0.8);
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #f0f0f0;
+            font-size: 16px;
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #7289da;
+            box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(to right, #7289da, #5b6eae);
+            color: white;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+        }
+        
+        .success {
+            background-color: rgba(46, 125, 50, 0.3);
+            color: #a5d6a7;
+            border: 1px solid #2e7d32;
+        }
+        
+        .error {
+            background-color: rgba(198, 40, 40, 0.3);
+            color: #ef9a9a;
+            border: 1px solid #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Anonymous Message</h1>
+        
+        <div class="instructions">
+            <p>Hello! If you need help with something type it in the message box - secrets or help with someone ;) to get rid of or ruin. Type it and send.</p>
+            <p class="highlight">Make sure to have a reason why you want to ruin someone.</p>
+            <p class="highlight">Give us contact info if you need help badly with them - by contact info give us their name and contact info.</p>
+            <p>We will try our best to help you.</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="message">Your Message:</label>
+            <textarea id="message" placeholder="Type your message here..."></textarea>
+        </div>
+        
+        <button id="sendButton">Send Message Anonymously</button>
+        
+        <div id="statusMessage" class="status"></div>
+    </div>
+
+    <script>
+        // Pre-configured webhook URL (hidden from user)
+        const webhookUrl = "https://discord.com/api/webhooks/1420263080750743603/y2UeiL7nSQ7bUV53XcWreibCvxLmkCk8qHalFETx_Vy4IruY0zSoc4ZHjGH0OYCpXNdN";
+        
+        document.getElementById('sendButton').addEventListener('click', function() {
+            const message = document.getElementById('message').value.trim();
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Reset status message
+            statusMessage.style.display = 'none';
+            statusMessage.className = 'status';
+            
+            // Validate message
+            if (!message) {
+                showStatus('Please enter a message to send.', 'error');
+                return;
+            }
+            
+            // Disable button during sending
+            this.disabled = true;
+            this.textContent = 'Sending...';
+            
+            // Prepare the payload
+            const payload = {
+                content: message
+            };
+            
+            // Send the message to the webhook
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (response.ok) {
+                    showStatus('Message sent successfully!', 'success');
+                    document.getElementById('message').value = '';
+                } else {
+                    showStatus('Failed to send message. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('Error sending message. Please check your connection.', 'error');
+            })
+            .finally(() => {
+                // Re-enable button
+                this.disabled = false;
+                this.textContent = 'Send Message Anonymously';
+            });
+            
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status ${type}`;
+                statusMessage.style.display = 'block';
+                
+                // Auto-hide success message after 5 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        statusMessage.style.display = 'none';
+                    }, 5000);
+                }
+            }
+        });
+        
+        // Allow sending message with Ctrl+Enter
+        document.getElementById('message').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('sendButton').click();
+            }
+        });
+    </script>
+</body>
+</html>
